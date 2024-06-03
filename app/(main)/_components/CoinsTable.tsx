@@ -1,3 +1,4 @@
+'use client'
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -10,21 +11,103 @@ import {
 } from "@/components/ui/table";
 import { cn } from '@/lib/utils';
 import { CoinDataType } from '@/types/CoinDataType';
-import { FaDollarSign, FaStar } from 'react-icons/fa';
+import { FaChevronUp, FaChevronDown, FaSort, FaDollarSign, FaStar } from 'react-icons/fa';
 import PriceChange, { isUp } from './PriceChange';
 import useSearch from '@/store/useSearch';
+import { useEffect, useState } from 'react';
+import { randomInt } from 'crypto';
+import useSort from '@/store/useSort';
 
 interface CoinsTableProps {
     coinData: CoinDataType
 }
 
+interface TableHeadProps {
+    label: string
+    state: 'up' | 'down' | null
+    onClick: () => void
+}
+
+
 function CoinsTable({
     coinData
 }: CoinsTableProps) {
     const { searchQuery } = useSearch()
+    const { filter, setFilter} = useSort()
+
+    const [heads, SetHeads] = useState<TableHeadProps[]>([{
+        label: 'Name',
+        state: null,
+        onClick: () => { }
+    },
+    {
+        label: '1H',
+        state: null,
+        onClick: () => { }
+    },
+    {
+        label: '24H',
+        state: null,
+        onClick: () => { }
+    },
+    {
+        label: '7D',
+        state: null,
+        onClick: () => { }
+    },
+    {
+        label: 'Price',
+        state: null,
+        onClick: () => { }
+    },
+    {
+        label: 'Tag',
+        state: null,
+        onClick: () => { }
+    },
+    {
+        label: 'Market capitalization',
+        state: null,
+        onClick: () => { }
+    }])
+
+
+    useEffect(() => {
+        SetHeads(prevHeads => prevHeads.map((head, i) => ({
+            ...head,
+            onClick: () => handleSort(i)
+        })));
+    }, []);
+
+
+    const handleSort = (index: number) => {
+        SetHeads((prev) => {
+            return prev.map((head, i) => {
+                if (i === index) {
+                    if (head.state === null) {
+                        setFilter(head.label, 'up')
+                        return { ...head, label: head.label, state: 'up' };
+                    } else if (head.state === 'up') {
+                        setFilter(head.label, 'down')
+                        return { ...head, state: 'down' };
+                    } else {
+                        setFilter(head.label, null)
+                        return { ...head, state: null };
+                    }
+                } else {
+                    setFilter(head.label, null)
+                    return { ...head, state: null };
+                }
+            });
+        });
+
+    }
+
     const filteredData = coinData.data?.filter((coin) => {
         return coin.name.toLowerCase().includes(searchQuery.toLowerCase())
     })
+
+
     return (
         <Table className='font-semibold'>
             <TableCaption>Coins</TableCaption>
@@ -32,13 +115,24 @@ function CoinsTable({
                 <TableRow>
                     <TableHead></TableHead>
                     <TableHead>#</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>1H</TableHead>
-                    <TableHead>24H</TableHead>
-                    <TableHead>7D</TableHead>
-                    <TableHead>price</TableHead>
-                    <TableHead>Tag</TableHead>
-                    <TableHead>Market capitalization</TableHead>
+                    {heads.map((head) => (
+                        <TableHead key={head.label}>
+                            <div className='flex items-center'>
+                                {head.label}
+                                <Button onClick={() => head.onClick()} variant='ghost'>
+                                    {
+                                        head.state === 'up' && <FaChevronUp />
+                                    }
+                                    {
+                                        head.state === 'down' && <FaChevronDown />
+                                    }
+                                    {
+                                        !head.state && <FaSort />
+                                    }
+                                </Button>
+                            </div>
+                        </TableHead>
+                    ))}
                 </TableRow>
             </TableHeader>
             <TableBody>

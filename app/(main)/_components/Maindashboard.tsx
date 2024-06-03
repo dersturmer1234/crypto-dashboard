@@ -1,14 +1,16 @@
 'use client'
 
-import React from 'react'
-import { useEffect, useState } from 'react'
-import { getCoinData } from '@/services/coinService'
+// import { socket } from "@/socket"
 import { CoinDataType } from '@/types/CoinDataType'
-import { Badge } from '@/components/ui/badge'
+import { useEffect, useState } from 'react'
 import CoinsTable from './CoinsTable'
+import { getCoinData } from '@/services/coinService'
+import { setInterval } from 'timers/promises'
+
 
 function Maindashboard() {
     const [coinData, setCoinData] = useState<CoinDataType>()
+
     useEffect(() => {
         getCoinData().then((data) => {
             if (data) {
